@@ -1,0 +1,1874 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌾 AI Agriculture Dashboard - n8n Integration</title>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jsPDF and autoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-light: #1a237e;
+            --secondary-light: #283593;
+            --accent-light: #3949ab;
+            --success-light: #2e7d32;
+            --warning-light: #f57c00;
+            --danger-light: #d32f2f;
+            --background-light: #f5f7fa;
+            --card-light: #ffffff;
+            --text-light: #263238;
+            --text-secondary-light: #546e7a;
+            --border-light: #e0e0e0;
+            
+            /* Dark Theme */
+            --primary-dark: #0d1b2a;
+            --secondary-dark: #1b263b;
+            --accent-dark: #415a77;
+            --success-dark: #2d6a4f;
+            --warning-dark: #e9c46a;
+            --danger-dark: #e76f51;
+            --background-dark: #0a1929;
+            --card-dark: #1e293b;
+            --text-dark: #e2e8f0;
+            --text-secondary-dark: #94a3b8;
+            --border-dark: #334155;
+            
+            /* Current Theme */
+            --primary: var(--primary-dark);
+            --secondary: var(--secondary-dark);
+            --accent: var(--accent-dark);
+            --success: var(--success-dark);
+            --warning: var(--warning-dark);
+            --danger: var(--danger-dark);
+            --background: var(--background-dark);
+            --card: var(--card-dark);
+            --text: var(--text-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --border: var(--border-dark);
+            
+            /* Demand Colors */
+            --demand-high: #10b981;
+            --demand-medium: #f59e0b;
+            --demand-low: #ef4444;
+        }
+        
+        [data-theme="light"] {
+            --primary: var(--primary-light);
+            --secondary: var(--secondary-light);
+            --accent: var(--accent-light);
+            --success: var(--success-light);
+            --warning: var(--warning-light);
+            --danger: var(--danger-light);
+            --background: var(--background-light);
+            --card: var(--card-light);
+            --text: var(--text-light);
+            --text-secondary: var(--text-secondary-light);
+            --border: var(--border-light);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: white;
+        }
+        
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            max-width: 800px;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .theme-btn, .source-btn, .logout-btn, .pdf-btn, .live-btn, .tamper-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+        
+        .theme-btn:hover, .source-btn:hover, .logout-btn:hover, .pdf-btn:hover, .live-btn:hover, .tamper-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .logout-btn {
+            background: rgba(220, 38, 38, 0.3);
+            border-color: rgba(220, 38, 38, 0.5);
+        }
+
+        .pdf-btn {
+            background: rgba(45, 106, 79, 0.4);
+            border-color: rgba(45, 106, 79, 0.6);
+        }
+
+        .live-btn {
+            background: rgba(220, 38, 38, 0.3);
+            border-color: rgba(220, 38, 38, 0.5);
+        }
+
+        .tamper-btn {
+            background: rgba(255, 165, 0, 0.3);
+            border-color: rgba(255, 165, 0, 0.6);
+        }
+        
+        /* Search Section */
+        .search-section {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .search-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr 1fr auto;
+            gap: 20px;
+            align-items: end;
+        }
+        
+        @media (max-width: 1024px) {
+            .search-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .search-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .search-group {
+            position: relative;
+        }
+        
+        .search-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--card);
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+        }
+        
+        .search-type {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .search-type-option {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--card);
+            color: var(--text);
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .search-type-option.active {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        
+        .search-type-option i {
+            margin-right: 8px;
+        }
+        
+        .search-btn {
+            background: linear-gradient(135deg, var(--success) 0%, #2d6a4f 100%);
+            color: white;
+            border: none;
+            padding: 16px 35px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s;
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(45, 106, 79, 0.3);
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--warning));
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text);
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Top States Section */
+        .top-states-section {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .section-header h2 {
+            font-size: 1.8rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .top-states-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .state-card {
+            background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .state-card.demand-high {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .state-card.demand-medium {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .state-card.demand-low {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .rank-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .state-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .state-profit {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .state-details {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 15px;
+        }
+        
+        .demand-score {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        
+        .demand-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .demand-badge.high {
+            background: rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+        
+        .demand-badge.medium {
+            background: rgba(245, 158, 11, 0.3);
+            color: #f59e0b;
+        }
+        
+        .demand-badge.low {
+            background: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .chart-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        /* Data Table */
+        .data-section {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .data-table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+        
+        th {
+            background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+            color: white;
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+        
+        tr:hover {
+            background: rgba(66, 153, 225, 0.1);
+        }
+        
+        /* Source Indicator */
+        .source-indicator {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .source-n8n {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .source-local {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+        
+        /* Loader */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+        
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 20px 25px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 400px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, var(--success) 0%, #2d6a4f 100%);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, var(--danger) 0%, #c53030 100%);
+        }
+        
+        .notification.info {
+            background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+        }
+        
+        /* Animations */
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header-controls {
+                flex-direction: column;
+            }
+            
+            .search-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .top-states-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .page-btn {
+            padding: 10px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .page-info {
+            color: var(--text-secondary);
+        }
+
+        /* Autocomplete */
+        .autocomplete-suggestions {
+            position: absolute;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .autocomplete-suggestion {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .autocomplete-suggestion:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .autocomplete-suggestion:last-child {
+            border-bottom: none;
+        }
+
+        /* PDF download button */
+        .pdf-btn i {
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="loader-overlay" id="loader">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+    
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-seedling"></i>VELAAN-AI: AI Agriculture Dashboard</h1>
+                <p>Search any crop from 3000+ records. Get real-time analytics with n8n integration, top 5 states, and detailed insights.</p>
+                <div class="header-controls">
+                    <button class="theme-btn" id="themeToggle">
+                        <i class="fas fa-sun"></i> Switch to Light Mode
+                    </button>
+                    <button class="source-btn" onclick="reloadData()">
+                        <i class="fas fa-sync-alt"></i> Reload Data
+                    </button>
+                    <button class="pdf-btn" onclick="downloadATS_Friendly_PDF()">
+                        <i class="fas fa-file-pdf"></i> Download ATS PDF Report
+                    </button>
+                    <!-- Live Monitoring Button -->
+                    <button class="live-btn" onclick="window.location.href='cam.html'">
+                        <i class="fas fa-video"></i> Live Monitoring
+                    </button>
+                    <!-- Tamper Detection Button (NEW) -->
+                    <button class="tamper-btn" onclick="window.location.href='1.html'">
+                        <i class="fas fa-shield-alt"></i> QuickOrder
+                    </button>
+                    <button class="logout-btn" onclick="handleLogout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="search-container">
+                <div class="search-group">
+                    <label class="search-label"><i class="fas fa-search"></i> Search Type</label>
+                    <div class="search-type">
+                        <div class="search-type-option active" id="profitSearchType" onclick="setSearchType('profit')">
+                            <i class="fas fa-chart-line"></i> Search Profit
+                        </div>
+                        <div class="search-type-option" id="demandSearchType" onclick="setSearchType('demand')">
+                            <i class="fas fa-chart-bar"></i> Search Demand
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="search-group">
+                    <label class="search-label"><i class="fas fa-seedling"></i> Enter Crop/Vegetable Name</label>
+                    <input type="text" 
+                           id="cropSearch" 
+                           class="search-input" 
+                           placeholder="Type crop name (e.g., Tomato, Rice, Wheat, Onion, Potato...)"
+                           autocomplete="off">
+                    <div class="autocomplete-suggestions" id="cropSuggestions"></div>
+                </div>
+                
+                <div class="search-group">
+                    <label class="search-label"><i class="fas fa-map-marker-alt"></i> State (Optional)</label>
+                    <input type="text" 
+                           id="stateFilter" 
+                           class="search-input" 
+                           placeholder="Filter by state"
+                           autocomplete="off">
+                </div>
+                
+                <div class="search-group">
+                    <label class="search-label"><i class="fas fa-calendar-alt"></i> Season (Optional)</label>
+                    <select id="seasonFilter" class="search-input">
+                        <option value="">All Seasons</option>
+                        <option value="Kharif">Kharif</option>
+                        <option value="Rabi">Rabi</option>
+                        <option value="Zaid">Zaid</option>
+                    </select>
+                </div>
+                
+                <button class="search-btn" onclick="fetchData()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+            
+            <div style="margin-top: 20px; color: var(--text-secondary); font-size: 0.9rem;">
+                <p><i class="fas fa-info-circle"></i> Select search type: "Profit" shows top states by profit, "Demand" shows top states by market demand based on UCPI score, AI profit, and profit margin</p>
+            </div>
+        </section>
+        
+        <!-- Statistics -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <i class="fas fa-database stat-icon"></i>
+                <div class="stat-value" id="totalRecords">0</div>
+                <div class="stat-label">Total Records</div>
+            </div>
+            
+            <div class="stat-card">
+                <i class="fas fa-seedling stat-icon"></i>
+                <div class="stat-value" id="cropName">-</div>
+                <div class="stat-label">Selected Crop</div>
+            </div>
+            
+            <div class="stat-card">
+                <i class="fas fa-map-marker-alt stat-icon"></i>
+                <div class="stat-value" id="uniqueStates">0</div>
+                <div class="stat-label">States Covered</div>
+            </div>
+            
+            <div class="stat-card">
+                <i class="fas fa-chart-line stat-icon"></i>
+                <div class="stat-value" id="avgProfit">₹0</div>
+                <div class="stat-label" id="avgLabel">Avg Profit/ha</div>
+            </div>
+        </div>
+        
+        <!-- Top 5 States Section -->
+        <section class="top-states-section" id="topStatesSection" style="display: none;">
+            <div class="section-header">
+                <h2><i class="fas fa-trophy"></i> <span id="topStatesTitle">Top 5 States by Profit</span> <span id="dataSource" class="source-indicator source-local">Local Data</span></h2>
+                <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                    <i class="fas fa-info-circle"></i> <span id="topStatesDescription">Based on average profit for this crop</span>
+                </div>
+            </div>
+            
+            <div class="top-states-grid" id="topStatesGrid">
+                <!-- Top states will be populated here -->
+            </div>
+        </section>
+        
+        <!-- Charts Section -->
+        <div class="charts-grid" id="chartsSection" style="display: none;">
+            <div class="chart-container">
+                <h3 class="chart-title"><i class="fas fa-chart-bar"></i> Profit Analysis</h3>
+                <div class="chart-wrapper">
+                    <canvas id="profitChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title"><i class="fas fa-chart-line"></i> UCPI Score Analysis</h3>
+                <div class="chart-wrapper">
+                    <canvas id="ucpiChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title"><i class="fas fa-chart-pie"></i> AI Profit Score Analysis</h3>
+                <div class="chart-wrapper">
+                    <canvas id="aiChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Table Section -->
+        <section class="data-section">
+            <div class="section-header">
+                <h2><i class="fas fa-table"></i> Detailed Records <span id="tableCount">(0 records)</span></h2>
+                <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                    <i class="fas fa-filter"></i> Showing data for: <span id="currentCropFilter" style="font-weight: 600;">-</span>
+                </div>
+            </div>
+            
+            <div class="data-table-container">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Crop</th>
+                            <th>State</th>
+                            <th>Season</th>
+                            <th>Yield (t/ha)</th>
+                            <th>Price (₹/qtl)</th>
+                            <th>Profit (₹/ha)</th>
+                            <th>UCPI Score</th>
+                            <th>AI Profit Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination">
+                <button class="page-btn" id="prevBtn" onclick="changePage(-1)" disabled>Previous</button>
+                <div class="page-info" id="pageInfo">Page 1 of 1</div>
+                <button class="page-btn" id="nextBtn" onclick="changePage(1)" disabled>Next</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Global variables
+        let currentData = [];
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let currentTheme = 'dark';
+        let charts = {};
+        let cropSuggestions = [];
+        let lastSearchParams = { crop: '', state: '', season: '' };
+        let currentSearchType = 'profit'; // 'profit' or 'demand'
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("🌱 Initializing Agriculture Dashboard...");
+            initializeCharts();
+            setupEventListeners();
+            checkSystemStatus();
+            loadCropSuggestions();
+        });
+        
+        // Initialize charts
+        function initializeCharts() {
+            // Profit Chart
+            const profitCtx = document.getElementById('profitChart').getContext('2d');
+            charts.profit = new Chart(profitCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Average Profit (₹/ha)',
+                        data: [],
+                        backgroundColor: '#3b82f6',
+                        borderColor: '#2563eb',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text')
+                            },
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `₹${context.raw.toLocaleString('en-IN')}/ha`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'),
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString('en-IN');
+                                }
+                            },
+                            grid: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border')
+                            },
+                            title: {
+                                display: true,
+                                text: 'Profit (₹/ha)',
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                            },
+                            grid: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border')
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // UCPI Chart
+            const ucpiCtx = document.getElementById('ucpiChart').getContext('2d');
+            charts.ucpi = new Chart(ucpiCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'UCPI Score',
+                        data: [],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text')
+                            },
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Score: ${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                            },
+                            grid: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border')
+                            },
+                            title: {
+                                display: true,
+                                text: 'UCPI Score',
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                            },
+                            grid: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border')
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // AI Chart
+            const aiCtx = document.getElementById('aiChart').getContext('2d');
+            charts.ai = new Chart(aiCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'AI Profit Score',
+                        data: [],
+                        backgroundColor: '#8b5cf6',
+                        borderColor: '#7c3aed',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text')
+                            },
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '₹' + context.raw.toLocaleString('en-IN');
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'),
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString('en-IN');
+                                }
+                            },
+                            grid: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border')
+                            },
+                            title: {
+                                display: true,
+                                text: 'AI Profit Score (₹)',
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                            },
+                            grid: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border')
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Theme toggle
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // Enter key to search
+            document.getElementById('cropSearch').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    fetchData();
+                }
+            });
+            
+            // Autocomplete for crop search
+            document.getElementById('cropSearch').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                showCropSuggestions(searchTerm);
+            });
+            
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.search-group')) {
+                    hideCropSuggestions();
+                }
+            });
+        }
+        
+        // Set search type
+        function setSearchType(type) {
+            currentSearchType = type;
+            
+            // Update UI
+            document.getElementById('profitSearchType').classList.toggle('active', type === 'profit');
+            document.getElementById('demandSearchType').classList.toggle('active', type === 'demand');
+            
+            // Update labels
+            if (type === 'profit') {
+                document.getElementById('avgLabel').textContent = 'Avg Profit/ha';
+            } else {
+                document.getElementById('avgLabel').textContent = 'Avg Demand Score';
+            }
+        }
+        
+        // Toggle theme
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.getElementById('themeToggle');
+            const icon = themeToggle.querySelector('i');
+            
+            if (currentTheme === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                currentTheme = 'light';
+                icon.className = 'fas fa-moon';
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i> Switch to Dark Mode';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                currentTheme = 'dark';
+                icon.className = 'fas fa-sun';
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i> Switch to Light Mode';
+            }
+            
+            // Update charts theme
+            updateChartsTheme();
+        }
+        
+        // Update charts theme
+        function updateChartsTheme() {
+            const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text');
+            const textSecondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary');
+            const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border');
+            
+            Object.values(charts).forEach(chart => {
+                chart.options.scales.x.ticks.color = textSecondaryColor;
+                chart.options.scales.x.grid.color = borderColor;
+                chart.options.scales.y.ticks.color = textSecondaryColor;
+                chart.options.scales.y.grid.color = borderColor;
+                chart.options.plugins.legend.labels.color = textColor;
+                chart.update();
+            });
+        }
+        
+        // Load crop suggestions
+        async function loadCropSuggestions() {
+            try {
+                const response = await fetch('/get-crop-suggestions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ search: '' })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    cropSuggestions = data.suggestions;
+                }
+            } catch (error) {
+                console.error('Error loading crop suggestions:', error);
+            }
+        }
+        
+        // Show crop suggestions
+        function showCropSuggestions(searchTerm) {
+            const suggestionsContainer = document.getElementById('cropSuggestions');
+            
+            if (!searchTerm) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+            
+            const filtered = cropSuggestions.filter(crop => 
+                crop.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            
+            if (filtered.length === 0) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+            
+            suggestionsContainer.innerHTML = '';
+            filtered.forEach(crop => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-suggestion';
+                div.textContent = crop;
+                div.addEventListener('click', function() {
+                    document.getElementById('cropSearch').value = crop;
+                    suggestionsContainer.style.display = 'none';
+                });
+                suggestionsContainer.appendChild(div);
+            });
+            
+            suggestionsContainer.style.display = 'block';
+        }
+        
+        // Hide crop suggestions
+        function hideCropSuggestions() {
+            document.getElementById('cropSuggestions').style.display = 'none';
+        }
+        
+        // Fetch data from n8n or local
+        async function fetchData() {
+            showLoader();
+            
+            const crop = document.getElementById('cropSearch').value.trim();
+            const state = document.getElementById('stateFilter').value.trim();
+            const season = document.getElementById('seasonFilter').value;
+            
+            if (!crop) {
+                showNotification('❌ Please enter a crop name to search', 'error');
+                hideLoader();
+                return;
+            }
+            
+            // Save search params for PDF
+            lastSearchParams = { crop, state, season };
+            
+            // Update current crop filter display
+            document.getElementById('currentCropFilter').textContent = crop;
+            
+            try {
+                const response = await fetch('/fetch-n8n-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        crop: crop,
+                        state: state,
+                        season: season
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentData = data.data;
+                    currentPage = 1; // Reset to first page for new data
+                    
+                    if (currentSearchType === 'profit') {
+                        updateStatistics(data.stats);
+                        updateTopStates(data.top_states, data.source);
+                        document.getElementById('topStatesTitle').textContent = 'Top 5 States by Profit';
+                        document.getElementById('topStatesDescription').textContent = 'Based on average profit for this crop';
+                    } else {
+                        const demandStats = calculateDemandStatistics(currentData);
+                        const topDemandStates = getTopStatesByDemand(currentData);
+                        updateStatistics(demandStats);
+                        updateTopStatesDemand(topDemandStates, data.source);
+                        document.getElementById('topStatesTitle').textContent = 'Top 5 States by Demand';
+                        document.getElementById('topStatesDescription').textContent = 'Based on demand score (UCPI × AI Profit × Profit)';
+                    }
+                    
+                    updateCharts(data.charts);
+                    renderTable();
+                    
+                    // Update data source indicator
+                    const sourceIndicator = document.getElementById('dataSource');
+                    sourceIndicator.textContent = data.source === 'n8n' ? 'n8n Data' : 'Local Data';
+                    sourceIndicator.className = `source-indicator ${data.source === 'n8n' ? 'source-n8n' : 'source-local'}`;
+                    
+                    // Show sections
+                    document.getElementById('topStatesSection').style.display = 'block';
+                    document.getElementById('chartsSection').style.display = 'grid';
+                    
+                    showNotification(`✅ Found ${data.total_records} records for ${crop} (Source: ${data.source})`, 'success');
+                    
+                } else {
+                    showNotification(`❌ ${data.message}`, 'error');
+                    // Hide sections if no data
+                    document.getElementById('topStatesSection').style.display = 'none';
+                    document.getElementById('chartsSection').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showNotification('❌ Error fetching data. Please try again.', 'error');
+            } finally {
+                hideLoader();
+            }
+        }
+        
+        // Calculate demand statistics
+        function calculateDemandStatistics(data) {
+            if (!data || data.length === 0) return {};
+            
+            const demandScores = data.map(item => calculateDemandScore(item));
+            
+            return {
+                total_records: data.length,
+                crop_name: data[0].crop,
+                unique_states: new Set(data.map(item => item.state)).size,
+                avg_profit: parseFloat((demandScores.reduce((a, b) => a + b, 0) / demandScores.length).toFixed(2)),
+                max_profit: Math.max(...demandScores),
+                min_profit: Math.min(...demandScores)
+            };
+        }
+        
+        // Calculate demand score for a single item
+        function calculateDemandScore(item) {
+            // Demand formula: (UCPI Score × AI Profit Score × Profit) / 100000
+            // Normalized to a reasonable scale
+            const ucpi = item.ucpi_score || 0;
+            const aiProfit = item.ai_profit_score || 0;
+            const profit = item.profit_per_ha || 0;
+            
+            // Demand score formula - combines multiple factors
+            let demandScore = (ucpi * aiProfit * profit) / 100000;
+            
+            // Add seasonal adjustment (optional)
+            const season = item.season || '';
+            if (season === 'Rabi') demandScore *= 1.2; // Rabi crops often have higher demand
+            if (season === 'Kharif') demandScore *= 1.1; // Kharif crops moderate demand
+            if (season === 'Zaid') demandScore *= 0.9; // Zaid crops lower demand
+            
+            return Math.round(demandScore * 100) / 100; // Round to 2 decimal places
+        }
+        
+        // Get top states by demand
+        function getTopStatesByDemand(data) {
+            if (!data || data.length === 0) return [];
+            
+            // Group by state
+            const stateDemand = {};
+            data.forEach(item => {
+                const state = item.state;
+                if (!stateDemand[state]) {
+                    stateDemand[state] = {
+                        scores: [],
+                        profits: [],
+                        ucpi: [],
+                        aiScores: []
+                    };
+                }
+                
+                const demandScore = calculateDemandScore(item);
+                stateDemand[state].scores.push(demandScore);
+                stateDemand[state].profits.push(item.profit_per_ha || 0);
+                stateDemand[state].ucpi.push(item.ucpi_score || 0);
+                stateDemand[state].aiScores.push(item.ai_profit_score || 0);
+            });
+            
+            // Calculate averages
+            const stateAverages = [];
+            for (const [state, values] of Object.entries(stateDemand)) {
+                const avgDemand = values.scores.reduce((a, b) => a + b, 0) / values.scores.length;
+                const avgProfit = values.profits.reduce((a, b) => a + b, 0) / values.profits.length;
+                const avgUcpi = values.ucpi.reduce((a, b) => a + b, 0) / values.ucpi.length;
+                const avgAi = values.aiScores.reduce((a, b) => a + b, 0) / values.aiScores.length;
+                
+                stateAverages.push({
+                    state: state,
+                    avg_profit: avgProfit,
+                    avg_demand: avgDemand,
+                    avg_ucpi: avgUcpi,
+                    avg_ai: avgAi,
+                    record_count: values.scores.length,
+                    max_profit: Math.max(...values.profits),
+                    min_profit: Math.min(...values.profits)
+                });
+            }
+            
+            // Sort by demand score (descending) and take top 5
+            return stateAverages.sort((a, b) => b.avg_demand - a.avg_demand).slice(0, 5);
+        }
+        
+        // Update top states for demand
+        function updateTopStatesDemand(topStates, source) {
+            const container = document.getElementById('topStatesGrid');
+            container.innerHTML = '';
+            
+            if (!topStates || topStates.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <i class="fas fa-chart-bar" style="font-size: 3rem; opacity: 0.5; margin-bottom: 20px;"></i>
+                        <p>No demand data available for the selected crop</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            topStates.forEach((state, index) => {
+                const rankIcons = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+                
+                // Determine demand level for color coding
+                let demandClass = 'demand-medium';
+                if (state.avg_demand > 5000) demandClass = 'demand-high';
+                else if (state.avg_demand < 1000) demandClass = 'demand-low';
+                
+                const card = document.createElement('div');
+                card.className = `state-card ${demandClass}`;
+                card.style.animation = `fadeIn 0.5s ease-out ${index * 0.1}s both`;
+                
+                card.innerHTML = `
+                    <div class="rank-badge">${rankIcons[index] || (index + 1)}</div>
+                    <div class="state-name">${state.state}</div>
+                    <div class="demand-score">${state.avg_demand.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div>
+                    <div class="state-details">
+                        <div><i class="fas fa-chart-line"></i> Demand Score</div>
+                        <div><i class="fas fa-database"></i> ${state.record_count} records</div>
+                        <div><i class="fas fa-arrow-up"></i> Profit: ₹${state.avg_profit.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div>
+                        <div><i class="fas fa-star"></i> UCPI: ${state.avg_ucpi.toFixed(1)}</div>
+                    </div>
+                    <div class="demand-badge ${demandClass}">
+                        ${demandClass === 'demand-high' ? '🔥 High Demand' : demandClass === 'demand-medium' ? '📊 Medium Demand' : '⚠️ Low Demand'}
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // Update statistics
+        function updateStatistics(stats) {
+            document.getElementById('totalRecords').textContent = stats.total_records || 0;
+            document.getElementById('cropName').textContent = stats.crop_name || '-';
+            document.getElementById('uniqueStates').textContent = stats.unique_states || 0;
+            
+            if (stats.avg_profit) {
+                if (currentSearchType === 'profit') {
+                    document.getElementById('avgProfit').textContent = '₹' + stats.avg_profit.toLocaleString('en-IN');
+                } else {
+                    document.getElementById('avgProfit').textContent = stats.avg_profit.toLocaleString('en-IN', {maximumFractionDigits: 0});
+                }
+            } else {
+                document.getElementById('avgProfit').textContent = currentSearchType === 'profit' ? '₹0' : '0';
+            }
+        }
+        
+        // Update top 5 states
+        function updateTopStates(topStates, source) {
+            const container = document.getElementById('topStatesGrid');
+            container.innerHTML = '';
+            
+            if (!topStates || topStates.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <i class="fas fa-chart-bar" style="font-size: 3rem; opacity: 0.5; margin-bottom: 20px;"></i>
+                        <p>No state data available for the selected crop</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            topStates.forEach((state, index) => {
+                const rankIcons = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+                
+                const card = document.createElement('div');
+                card.className = 'state-card';
+                card.style.animation = `fadeIn 0.5s ease-out ${index * 0.1}s both`;
+                
+                card.innerHTML = `
+                    <div class="rank-badge">${rankIcons[index] || (index + 1)}</div>
+                    <div class="state-name">${state.state}</div>
+                    <div class="state-profit">₹${state.avg_profit.toLocaleString('en-IN')}</div>
+                    <div class="state-details">
+                        <div><i class="fas fa-chart-line"></i> Average Profit</div>
+                        <div><i class="fas fa-database"></i> ${state.record_count} records</div>
+                        <div><i class="fas fa-arrow-up"></i> Max: ₹${state.max_profit.toLocaleString('en-IN')}</div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // Update charts
+        function updateCharts(chartData) {
+            if (!chartData) return;
+            
+            // Update profit chart
+            if (chartData.profit_chart) {
+                charts.profit.data.labels = chartData.profit_chart.labels;
+                charts.profit.data.datasets[0].data = chartData.profit_chart.datasets[0].data;
+                charts.profit.update();
+            }
+            
+            // Update UCPI chart
+            if (chartData.ucpi_chart) {
+                charts.ucpi.data.labels = chartData.ucpi_chart.labels;
+                charts.ucpi.data.datasets[0].data = chartData.ucpi_chart.datasets[0].data;
+                charts.ucpi.update();
+            }
+            
+            // Update AI chart
+            if (chartData.ai_chart) {
+                charts.ai.data.labels = chartData.ai_chart.labels;
+                charts.ai.data.datasets[0].data = chartData.ai_chart.datasets[0].data;
+                charts.ai.update();
+            }
+        }
+        
+        // Render table - FIXED: Removed currentPage = 1
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            const pageInfo = document.getElementById('pageInfo');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const tableCount = document.getElementById('tableCount');
+            
+            // Calculate pagination
+            const totalPages = Math.ceil(currentData.length / itemsPerPage);
+            
+            // Ensure currentPage is within valid range
+            if (currentPage > totalPages) {
+                currentPage = totalPages || 1;
+            }
+            if (currentPage < 1) {
+                currentPage = 1;
+            }
+            
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, currentData.length);
+            const pageData = currentData.slice(startIndex, endIndex);
+            
+            // Clear table
+            tableBody.innerHTML = '';
+            
+            // Populate table
+            pageData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.id}</td>
+                    <td><strong>${item.crop}</strong></td>
+                    <td>${item.state}</td>
+                    <td>${item.season}</td>
+                    <td>${item.yield_t_per_ha?.toFixed(2) || '0.00'}</td>
+                    <td>₹${item.price_per_qtl?.toLocaleString('en-IN') || '0'}</td>
+                    <td><strong>₹${item.profit_per_ha?.toLocaleString('en-IN') || '0'}</strong></td>
+                    <td>${item.ucpi_score?.toFixed(2) || '0.00'}</td>
+                    <td>₹${item.ai_profit_score?.toLocaleString('en-IN') || '0'}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // Update pagination controls
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+            
+            // Update table count
+            tableCount.textContent = `(${currentData.length} records)`;
+        }
+        
+        // Change page
+        function changePage(direction) {
+            const newPage = currentPage + direction;
+            const totalPages = Math.ceil(currentData.length / itemsPerPage);
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderTable();
+            }
+        }
+        
+        // Reload data
+        async function reloadData() {
+            showLoader();
+            
+            try {
+                const response = await fetch('/reload-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification(`✅ ${data.message}`, 'success');
+                    // Update stats
+                    updateStatistics(data.stats);
+                } else {
+                    showNotification(`❌ Error reloading data`, 'error');
+                }
+            } catch (error) {
+                console.error('Error reloading data:', error);
+                showNotification('❌ Error reloading data', 'error');
+            } finally {
+                hideLoader();
+            }
+        }
+        
+        // Check system status
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch('/get-system-status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log(`System Status: ${data.status.data_records} records loaded`);
+                    console.log(`n8n Enabled: ${data.status.n8n_enabled}`);
+                    
+                    // Update initial stats
+                    document.getElementById('totalRecords').textContent = data.status.data_records || 0;
+                }
+            } catch (error) {
+                console.error('Error checking system status:', error);
+            }
+        }
+        
+        // Handle logout
+        function handleLogout() {
+            window.location.href = '/logout';
+        }
+        
+        // Show loader
+        function showLoader() {
+            document.getElementById('loader').style.display = 'flex';
+        }
+        
+        // Hide loader
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+        
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.innerHTML = '';
+            
+            let icon = 'fa-info-circle';
+            if (type === 'success') icon = 'fa-check-circle';
+            if (type === 'error') icon = 'fa-exclamation-circle';
+            
+            notification.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+            notification.className = `notification ${type} show`;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        // ========== ATS-FRIENDLY PDF GENERATOR (ENGLISH, CLEAN, PARSABLE) ==========
+        async function downloadATS_Friendly_PDF() {
+            if (!currentData || currentData.length === 0) {
+                showNotification('❌ No data to export. Please search for a crop first.', 'error');
+                return;
+            }
+
+            showLoader();
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const cropName = lastSearchParams.crop || 'Crop';
+                const now = new Date();
+                
+                // ----- TITLE & HEADER (clean, machine-readable) -----
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(20);
+                doc.setTextColor(20, 20, 20);
+                doc.text(`CROP REPORT: ${cropName.toUpperCase()}`, 20, 20);
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(10);
+                doc.setTextColor(80);
+                doc.text(`Generated: ${now.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })} at ${now.toLocaleTimeString('en-IN')}`, 20, 30);
+                doc.text(`Data source: ${document.getElementById('dataSource').textContent}`, 20, 36);
+                doc.text(`Search type: ${currentSearchType === 'profit' ? 'Profit Analysis' : 'Demand Analysis'}`, 20, 42);
+                
+                // ----- KEY STATISTICS (as plain text, no graphics) -----
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(0);
+                doc.text('1. KEY STATISTICS', 20, 56);
+                
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(40);
+                doc.text(`Total records  : ${document.getElementById('totalRecords').textContent}`, 25, 68);
+                doc.text(`States covered : ${document.getElementById('uniqueStates').textContent}`, 25, 75);
+                
+                if (currentSearchType === 'profit') {
+                    doc.text(`Average profit : ${document.getElementById('avgProfit').textContent}/ha`, 25, 82);
+                } else {
+                    doc.text(`Average demand score : ${document.getElementById('avgProfit').textContent}`, 25, 82);
+                }
+                
+                // ----- TOP 5 STATES TABLE (ATS‑friendly table) -----
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(0);
+                doc.text('2. TOP 5 STATES', 20, 102);
+                
+                // Collect top states data from the already rendered cards
+                const topStatesData = [];
+                const topStateCards = document.querySelectorAll('#topStatesGrid .state-card');
+                topStateCards.forEach((card, index) => {
+                    const nameEl = card.querySelector('.state-name');
+                    const profitEl = card.querySelector('.state-profit');
+                    const demandEl = card.querySelector('.demand-score');
+                    
+                    if (currentSearchType === 'profit') {
+                        if (nameEl && profitEl) {
+                            let profitText = profitEl.textContent.trim();
+                            topStatesData.push([`#${index+1}`, nameEl.textContent.trim(), profitText]);
+                        }
+                    } else {
+                        if (nameEl && demandEl) {
+                            let demandText = demandEl.textContent.trim();
+                            topStatesData.push([`#${index+1}`, nameEl.textContent.trim(), demandText]);
+                        }
+                    }
+                });
+                
+                if (topStatesData.length > 0) {
+                    doc.autoTable({
+                        startY: 108,
+                        head: [['Rank', 'State', currentSearchType === 'profit' ? 'Average Profit (₹/ha)' : 'Demand Score']],
+                        body: topStatesData,
+                        theme: 'plain',
+                        styles: { font: 'helvetica', fontSize: 10, cellPadding: 4, textColor: [20,20,20] },
+                        headStyles: { fillColor: [240,240,240], textColor: [0,0,0], fontStyle: 'bold', halign: 'left' },
+                        columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 60 }, 2: { cellWidth: 60 } }
+                    });
+                } else {
+                    doc.setFontSize(10);
+                    doc.setTextColor(100);
+                    doc.text('No top state data available.', 25, 116);
+                }
+                
+                // ----- DETAILED RECORDS (first 10 rows, with all columns) -----
+                const tableStartY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 140;
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(0);
+                doc.text('3. SAMPLE RECORDS (first 10)', 20, tableStartY);
+                
+                const tableData = currentData.slice(0, 10).map(item => [
+                    item.id,
+                    item.crop,
+                    item.state,
+                    item.season,
+                    item.yield_t_per_ha?.toFixed(2) || '0.00',
+                    '₹' + (item.price_per_qtl?.toLocaleString('en-IN') || '0'),
+                    '₹' + (item.profit_per_ha?.toLocaleString('en-IN') || '0'),
+                    item.ucpi_score?.toFixed(2) || '0.00',
+                    '₹' + (item.ai_profit_score?.toLocaleString('en-IN') || '0')
+                ]);
+                
+                doc.autoTable({
+                    startY: tableStartY + 6,
+                    head: [['ID', 'Crop', 'State', 'Season', 'Yield', 'Price', 'Profit', 'UCPI', 'AI Score']],
+                    body: tableData,
+                    theme: 'plain',
+                    styles: { font: 'helvetica', fontSize: 8, cellPadding: 3, textColor: [20,20,20] },
+                    headStyles: { fillColor: [230,230,230], textColor: [0,0,0], fontStyle: 'bold' },
+                    columnStyles: { 
+                        0: { cellWidth: 12 }, 1: { cellWidth: 20 }, 2: { cellWidth: 22 }, 3: { cellWidth: 18 },
+                        4: { cellWidth: 16 }, 5: { cellWidth: 20 }, 6: { cellWidth: 22 }, 7: { cellWidth: 16 }, 8: { cellWidth: 22 }
+                    }
+                });
+                
+                // ----- AI INSIGHTS (plain English) -----
+                const insightsY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 240;
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(0);
+                doc.text('4. AI INSIGHTS', 20, insightsY);
+                
+                const avgAI = currentData.reduce((sum, item) => sum + (item.ai_profit_score || 0), 0) / currentData.length;
+                const maxAI = Math.max(...currentData.map(item => item.ai_profit_score || 0));
+                const minAI = Math.min(...currentData.map(item => item.ai_profit_score || 0));
+                
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(40);
+                doc.text(`• Average AI Profit Score : ₹ ${avgAI.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} per hectare`, 25, insightsY + 8);
+                doc.text(`• Maximum AI Profit Score : ₹ ${maxAI.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} per hectare`, 25, insightsY + 15);
+                doc.text(`• Minimum AI Profit Score : ₹ ${minAI.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} per hectare`, 25, insightsY + 22);
+                
+                // ----- DEMAND INSIGHTS (if demand search) -----
+                if (currentSearchType === 'demand' && currentData.length > 0) {
+                    const demandScores = currentData.map(item => calculateDemandScore(item));
+                    const avgDemand = demandScores.reduce((a, b) => a + b, 0) / demandScores.length;
+                    const maxDemand = Math.max(...demandScores);
+                    
+                    doc.text(`• Average Demand Score : ${avgDemand.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`, 25, insightsY + 29);
+                    doc.text(`• Maximum Demand Score : ${maxDemand.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`, 25, insightsY + 36);
+                }
+                
+                // ----- FOOTER with ATS-friendly reference -----
+                doc.setFontSize(8);
+                doc.setTextColor(120);
+                doc.text('Report generated by AI Agriculture Dashboard · Data compatible with ATS parsers · All values in Indian Rupees (₹)', 20, 285);
+                doc.text(`Report ID: ATS-AGRI-${now.toISOString().slice(0,10).replace(/-/g,'')}-${cropName.slice(0,3).toUpperCase()}`, 20, 290);
+                
+                // Save PDF
+                doc.save(`ATS_Agri_${cropName}_${now.toISOString().slice(0,10)}.pdf`);
+                showNotification('✅ ATS-friendly PDF downloaded!', 'success');
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                showNotification('❌ Failed to generate PDF. Please try again.', 'error');
+            } finally {
+                hideLoader();
+            }
+        }
+    </script>
+</body>
+</html>

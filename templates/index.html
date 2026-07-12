@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGRO-PREDICT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            /* Dark Theme (Default) - SKILLLEDGER Purple */
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-accent: #2d3748;
+            --text-primary: #E3E3E3;
+            --text-secondary: #E3E3E3;
+            --accent-primary: #667eea;
+            --accent-secondary: #764ba2;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #9f7aea 0%, #f687b3 100%);
+        }
+
+        .light-theme {
+            /* Light Theme - SKILLLEDGER Fresh Purple/White */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-accent: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --accent-primary: #667eea;
+            --accent-secondary: #764ba2;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --shadow-color: rgba(102, 126, 234, 0.15);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(102, 126, 234, 0.2);
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #9f7aea 0%, #f687b3 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            transition: background-color 0.3s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: background 0.3s ease;
+        }
+
+        body.light-theme {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            width: 500px;
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            animation: slideUp 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-1);
+            animation: slideRight 2s ease-in-out infinite;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideRight {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .main-logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px var(--shadow-color);
+            animation: fadeIn 1s ease-out;
+        }
+
+        .logo-tagline {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 5px 15px;
+            border-radius: 25px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid var(--border-color);
+            display: inline-block;
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-icon {
+            text-align: center;
+            font-size: 3rem;
+            margin: 1rem 0;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .form-title {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        form {
+            margin: 0;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 2rem;
+            animation: slideIn 0.5s ease-out backwards;
+        }
+
+        .input-group:nth-child(1) { animation-delay: 0.1s; }
+        .input-group:nth-child(2) { animation-delay: 0.2s; }
+        .input-group:nth-child(3) { animation-delay: 0.3s; }
+        .input-group:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-primary);
+            font-size: 1.1rem;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 15px 15px 50px;
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            background: var(--bg-accent);
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        input:focus + label, 
+        input:not(:placeholder-shown) + label {
+            top: -12px;
+            left: 10px;
+            font-size: 12px;
+            color: var(--accent-primary);
+            background: var(--card-bg);
+            padding: 0 8px;
+            font-weight: 600;
+            z-index: 3;
+            backdrop-filter: blur(5px);
+            border-radius: 4px;
+        }
+
+        input:focus ~ i {
+            color: var(--accent-secondary);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        label {
+            position: absolute;
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 16px;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-accent);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-primary);
+            font-size: 1.1rem;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            transition: all 0.3s ease;
+            z-index: 10;
+            border: 1px solid var(--border-color);
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-3px) rotate(15deg);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+            color: var(--accent-secondary);
+        }
+
+        .recover {
+            text-align: right;
+            margin-bottom: 1.5rem;
+        }
+
+        .recover a {
+            text-decoration: none;
+            color: var(--accent-primary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .recover a:hover {
+            color: var(--accent-secondary);
+            text-decoration: underline;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 16px;
+            background: var(--gradient-1);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::after {
+            left: 100%;
+        }
+
+        .or {
+            text-align: center;
+            margin: 1.5rem 0;
+            color: var(--text-secondary);
+            font-weight: 500;
+            position: relative;
+        }
+
+        .or::before,
+        .or::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .or::before {
+            left: 0;
+        }
+
+        .or::after {
+            right: 0;
+        }
+
+        .icons {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .icons i {
+            color: var(--accent-primary);
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            background: var(--bg-accent);
+        }
+
+        .icons i:hover {
+            background: var(--gradient-1);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            border-color: transparent;
+        }
+
+        .links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1rem;
+            margin-top: 1.5rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .links p {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .toggle-btn {
+            color: var(--accent-primary);
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toggle-btn:hover {
+            color: var(--accent-secondary);
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(5px);
+        }
+
+        .toggle-btn::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            transition: right 0.3s ease;
+        }
+
+        .toggle-btn:hover::after {
+            right: 5px;
+        }
+
+        .message {
+            padding: 12px;
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 500;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* Enhanced 3D Background Effect */
+        .bg-3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        /* Floating 3D Cubes */
+        .cube {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-1);
+            border-radius: 8px;
+            transform-style: preserve-3d;
+            animation: floatCube 20s infinite linear;
+            opacity: 0.1;
+            box-shadow: 
+                inset 0 0 20px rgba(255, 255, 255, 0.1),
+                0 0 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .cube::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 30%, rgba(255, 255, 255, 0.1));
+            border-radius: 8px;
+        }
+
+        .cube::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            box-shadow: 
+                inset 0 0 20px rgba(255, 255, 255, 0.05),
+                0 0 40px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Cube Positions and Variations */
+        .cube:nth-child(1) {
+            top: 15%;
+            left: 10%;
+            animation-delay: 0s;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            opacity: 0.15;
+        }
+
+        .cube:nth-child(2) {
+            top: 70%;
+            left: 85%;
+            animation-delay: -3s;
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            opacity: 0.12;
+            animation-duration: 25s;
+        }
+
+        .cube:nth-child(3) {
+            top: 25%;
+            left: 80%;
+            animation-delay: -6s;
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            opacity: 0.1;
+            animation-duration: 22s;
+        }
+
+        .cube:nth-child(4) {
+            top: 60%;
+            left: 15%;
+            animation-delay: -9s;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ef4444, #f87171);
+            opacity: 0.08;
+            animation-duration: 28s;
+        }
+
+        .cube:nth-child(5) {
+            top: 85%;
+            left: 40%;
+            animation-delay: -12s;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            opacity: 0.12;
+            animation-duration: 24s;
+        }
+
+        .cube:nth-child(6) {
+            top: 40%;
+            left: 60%;
+            animation-delay: -15s;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            opacity: 0.1;
+            animation-duration: 26s;
+        }
+
+        /* 3D Pyramid */
+        .pyramid {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 100px solid rgba(102, 126, 234, 0.1);
+            animation: rotatePyramid 30s infinite linear;
+            top: 50%;
+            left: 50%;
+            transform-origin: center;
+        }
+
+        .pyramid::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 45px solid transparent;
+            border-right: 45px solid transparent;
+            border-bottom: 90px solid rgba(102, 126, 234, 0.05);
+            top: 5px;
+            left: -45px;
+        }
+
+        /* Floating Rings */
+        .ring {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border: 3px solid rgba(102, 126, 234, 0.15);
+            border-radius: 50%;
+            animation: rotateRing 25s infinite linear;
+        }
+
+        .ring:nth-child(7) {
+            top: 20%;
+            left: 30%;
+            animation-delay: -5s;
+            width: 100px;
+            height: 100px;
+            border-width: 2px;
+        }
+
+        .ring:nth-child(8) {
+            top: 75%;
+            left: 70%;
+            animation-delay: -10s;
+            width: 120px;
+            height: 120px;
+            border-width: 1px;
+        }
+
+        .ring:nth-child(9) {
+            top: 50%;
+            left: 20%;
+            animation-delay: -15s;
+            width: 60px;
+            height: 60px;
+            border-width: 4px;
+        }
+
+        /* Geometric Shapes */
+        .geometric {
+            position: absolute;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), transparent);
+            animation: floatGeometric 35s infinite linear;
+        }
+
+        .geometric:nth-child(10) {
+            top: 10%;
+            left: 90%;
+            width: 70px;
+            height: 70px;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            animation-delay: -7s;
+        }
+
+        .geometric:nth-child(11) {
+            top: 90%;
+            left: 10%;
+            width: 40px;
+            height: 40px;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            animation-delay: -14s;
+        }
+
+        .geometric:nth-child(12) {
+            top: 30%;
+            left: 5%;
+            width: 80px;
+            height: 80px;
+            clip-path: circle(50% at 50% 50%);
+            animation-delay: -21s;
+        }
+
+        /* Particles */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            animation: floatParticle 15s infinite linear;
+        }
+
+        .particle:nth-child(13) { top: 15%; left: 20%; animation-delay: 0s; }
+        .particle:nth-child(14) { top: 85%; left: 80%; animation-delay: -2s; }
+        .particle:nth-child(15) { top: 50%; left: 50%; animation-delay: -4s; }
+        .particle:nth-child(16) { top: 30%; left: 90%; animation-delay: -6s; }
+        .particle:nth-child(17) { top: 70%; left: 10%; animation-delay: -8s; }
+        .particle:nth-child(18) { top: 10%; left: 70%; animation-delay: -10s; }
+        .particle:nth-child(19) { top: 90%; left: 30%; animation-delay: -12s; }
+        .particle:nth-child(20) { top: 60%; left: 60%; animation-delay: -14s; }
+
+        /* Animations */
+        @keyframes floatCube {
+            0% {
+                transform: 
+                    translateY(0) 
+                    rotateX(0) 
+                    rotateY(0) 
+                    rotateZ(0)
+                    translateZ(0);
+            }
+            25% {
+                transform: 
+                    translateY(-100px) 
+                    rotateX(180deg) 
+                    rotateY(90deg) 
+                    rotateZ(45deg)
+                    translateZ(50px);
+            }
+            50% {
+                transform: 
+                    translateY(-200px) 
+                    rotateX(360deg) 
+                    rotateY(180deg) 
+                    rotateZ(90deg)
+                    translateZ(100px);
+            }
+            75% {
+                transform: 
+                    translateY(-100px) 
+                    rotateX(540deg) 
+                    rotateY(270deg) 
+                    rotateZ(135deg)
+                    translateZ(50px);
+            }
+            100% {
+                transform: 
+                    translateY(0) 
+                    rotateX(720deg) 
+                    rotateY(360deg) 
+                    rotateZ(180deg)
+                    translateZ(0);
+            }
+        }
+
+        @keyframes rotatePyramid {
+            0% {
+                transform: 
+                    translate(-50%, -50%) 
+                    rotateX(0deg) 
+                    rotateY(0deg) 
+                    rotateZ(0deg);
+            }
+            100% {
+                transform: 
+                    translate(-50%, -50%) 
+                    rotateX(360deg) 
+                    rotateY(360deg) 
+                    rotateZ(360deg);
+            }
+        }
+
+        @keyframes rotateRing {
+            0% {
+                transform: 
+                    rotateX(0deg) 
+                    rotateY(0deg) 
+                    rotateZ(0deg)
+                    scale(1);
+                opacity: 0.1;
+            }
+            25% {
+                transform: 
+                    rotateX(90deg) 
+                    rotateY(45deg) 
+                    rotateZ(45deg)
+                    scale(1.2);
+                opacity: 0.3;
+            }
+            50% {
+                transform: 
+                    rotateX(180deg) 
+                    rotateY(90deg) 
+                    rotateZ(90deg)
+                    scale(0.8);
+                opacity: 0.1;
+            }
+            75% {
+                transform: 
+                    rotateX(270deg) 
+                    rotateY(135deg) 
+                    rotateZ(135deg)
+                    scale(1.1);
+                opacity: 0.2;
+            }
+            100% {
+                transform: 
+                    rotateX(360deg) 
+                    rotateY(180deg) 
+                    rotateZ(180deg)
+                    scale(1);
+                opacity: 0.1;
+            }
+        }
+
+        @keyframes floatGeometric {
+            0% {
+                transform: 
+                    translateY(0) 
+                    rotate(0deg) 
+                    scale(1);
+                filter: blur(0px);
+            }
+            25% {
+                transform: 
+                    translateY(-80px) 
+                    rotate(90deg) 
+                    scale(1.3);
+                filter: blur(1px);
+            }
+            50% {
+                transform: 
+                    translateY(-160px) 
+                    rotate(180deg) 
+                    scale(0.7);
+                filter: blur(0px);
+            }
+            75% {
+                transform: 
+                    translateY(-80px) 
+                    rotate(270deg) 
+                    scale(1.2);
+                filter: blur(0.5px);
+            }
+            100% {
+                transform: 
+                    translateY(0) 
+                    rotate(360deg) 
+                    scale(1);
+                filter: blur(0px);
+            }
+        }
+
+        @keyframes floatParticle {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-200px) translateX(100px);
+                opacity: 0.5;
+            }
+            90% {
+                opacity: 0;
+            }
+        }
+
+        /* Light Theme 3D Adjustments */
+        body.light-theme .cube,
+        body.light-theme .ring,
+        body.light-theme .pyramid,
+        body.light-theme .geometric,
+        body.light-theme .particle {
+            opacity: 0.05;
+        }
+
+        body.light-theme .cube {
+            box-shadow: 
+                inset 0 0 20px rgba(102, 126, 234, 0.05),
+                0 0 30px rgba(102, 126, 234, 0.1);
+        }
+
+        body.light-theme .ring {
+            border-color: rgba(102, 126, 234, 0.08);
+        }
+
+        body.light-theme .pyramid {
+            border-bottom-color: rgba(102, 126, 234, 0.05);
+        }
+
+        /* Password strength indicator */
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 5px;
+            background: var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .strength-weak { 
+            background: linear-gradient(90deg, var(--danger), var(--danger)); 
+            width: 33%; 
+        }
+        .strength-medium { 
+            background: linear-gradient(90deg, var(--warning), var(--warning)); 
+            width: 66%; 
+        }
+        .strength-strong { 
+            background: linear-gradient(90deg, var(--success), var(--success)); 
+            width: 100%; 
+        }
+
+        .terms {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .terms a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .terms a:hover {
+            color: var(--accent-secondary);
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width: 95%;
+                padding: 2rem 1.5rem;
+                margin: 20px;
+            }
+            
+            .main-logo {
+                font-size: 2rem;
+                letter-spacing: 1px;
+            }
+            
+            .logo-tagline {
+                font-size: 0.75rem;
+                padding: 4px 10px;
+            }
+            
+            .form-title {
+                font-size: 1.7rem;
+            }
+            
+            .auth-icon {
+                font-size: 2.5rem;
+            }
+            
+            .links {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .toggle-btn::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+   <!-- Enhanced 3D Background Effects -->
+<div class="bg-3d">
+    <!-- 3D Cubes -->
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    
+    <!-- 3D Pyramid -->
+    <div class="pyramid"></div>
+    
+    <!-- Floating Rings -->
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+    
+    <!-- Geometric Shapes -->
+    <div class="geometric"></div>
+    <div class="geometric"></div>
+    <div class="geometric"></div>
+    
+    <!-- Particles -->
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+</div>
+
+    <!-- Sign Up Container -->
+    <div class="container" id="signup" style="display:none;">
+        <button class="theme-toggle" id="themeToggle">
+            <i class="fas fa-moon"></i>
+        </button>
+        
+        <div class="logo-container">
+            <div class="main-logo">VELAAN-AI</div>
+            <div class="logo-tagline"></div>
+        </div>
+        
+        <div class="auth-icon">
+            <i class="fas fa-user-plus"></i>
+        </div>
+        <h1 class="form-title">Create Account</h1>
+        
+        <div id="signupMessage" class="message" style="display:none;"></div>
+
+        <form id="signupForm">
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="fName" id="fName" placeholder=" " required>
+                <label for="fName">First Name</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="lName" id="lName" placeholder=" " required>
+                <label for="lName">Last Name</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" id="email" placeholder=" " required>
+                <label for="email">Email Address</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" id="password" placeholder=" " required onkeyup="checkPasswordStrength(this.value)">
+                <label for="password">Password</label>
+                <div class="password-strength" id="passwordStrength"></div>
+            </div>
+            <button type="submit" class="btn">Create Account</button>
+        </form>
+
+        <p class="or">or continue with</p>
+        
+        <div class="icons">
+            <i class="fab fa-google" title="Sign up with Google"></i>
+            <i class="fab fa-facebook" title="Sign up with Facebook"></i>
+        </div>
+
+        <div class="links">
+            <p>Already have an account?</p>
+            <button class="toggle-btn" id="signInButton">Sign In</button>
+        </div>
+
+        <div class="terms">
+            By creating an account, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>
+        </div>
+    </div>
+
+    <!-- Sign In Container -->
+    <div class="container" id="signIn">
+        <button class="theme-toggle" id="themeToggle2">
+            <i class="fas fa-moon"></i>
+        </button>
+        
+        <div class="logo-container">
+            <div class="main-logo">VELAAN -AI</div>
+            <div class="logo-tagline">AgriSmart</div>
+        </div>
+        
+        <div class="auth-icon">
+            <i class="fas fa-sign-in-alt"></i>
+        </div>
+        
+        <div id="loginMessage" class="message" style="display:none;"></div>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" id="loginEmail" placeholder=" " required>
+                <label for="loginEmail">Email Address</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" id="loginPassword" placeholder=" " required>
+                <label for="loginPassword">Password</label>
+            </div>
+            <p class="recover">
+                <a href="#">Forgot your password?</a>
+            </p>
+            <button type="submit" class="btn">Sign In</button>
+        </form>
+
+        <p class="or">or continue with</p>
+        
+        <div class="icons">
+            <i class="fab fa-google" title="Sign in with Google"></i>
+            <i class="fab fa-facebook" title="Sign in with Facebook"></i>
+        </div>
+
+        <div class="links">
+            <p>Don't have an account?</p>
+            <button class="toggle-btn" id="signUpButton">Sign Up</button>
+        </div>
+    </div>
+
+    <script>
+        /* ---------------- PASSWORD STRENGTH ---------------- */
+        function checkPasswordStrength(password) {
+            const strengthBar = document.getElementById('passwordStrength');
+            if (!strengthBar) return;
+            
+            if (password.length === 0) {
+                strengthBar.className = 'password-strength';
+                return;
+            }
+            
+            let strength = 0;
+            if (password.match(/[a-z]+/)) strength++;
+            if (password.match(/[A-Z]+/)) strength++;
+            if (password.match(/[0-9]+/)) strength++;
+            if (password.match(/[$@#&!]+/)) strength++;
+            if (password.length > 7) strength++;
+            
+            if (strength < 3) {
+                strengthBar.className = 'password-strength strength-weak';
+            } else if (strength < 5) {
+                strengthBar.className = 'password-strength strength-medium';
+            } else {
+                strengthBar.className = 'password-strength strength-strong';
+            }
+        }
+
+        /* ---------------- THEME ---------------- */
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.body.classList.toggle('light-theme', savedTheme === 'light');
+            document.querySelectorAll('.theme-toggle i').forEach(icon => {
+                icon.className = savedTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
+            });
+        }
+
+        document.querySelectorAll('.theme-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const isLight = document.body.classList.toggle('light-theme');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+                document.querySelectorAll('.theme-toggle i').forEach(icon => {
+                    icon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+                });
+            });
+        });
+
+        /* ---------------- TOGGLE FORMS ---------------- */
+        document.getElementById('signUpButton').onclick = () => {
+            document.getElementById('signIn').style.display = 'none';
+            document.getElementById('signup').style.display = 'block';
+        };
+
+        document.getElementById('signInButton').onclick = () => {
+            document.getElementById('signup').style.display = 'none';
+            document.getElementById('signIn').style.display = 'block';
+        };
+
+        /* ---------------- MESSAGES ---------------- */
+        function showMessage(msg, type, containerId) {
+            const box = document.querySelector(`#${containerId} .message`);
+            box.textContent = msg;
+            box.className = `message ${type}`;
+            box.style.display = 'block';
+            setTimeout(() => box.style.display = 'none', 3000);
+        }
+
+        /* ---------------- SIGNUP (REAL) ---------------- */
+        document.getElementById("signupForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const data = {
+                fName: document.getElementById("fName").value,
+                lName: document.getElementById("lName").value,
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value
+            };
+
+            fetch("/signup", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    showMessage("Signup successful! Please login.", "success", "signup");
+                    setTimeout(() => {
+                        document.getElementById('signup').style.display = 'none';
+                        document.getElementById('signIn').style.display = 'block';
+                    }, 1500);
+                    document.getElementById("signupForm").reset();
+                } else {
+                    showMessage(res.message || "Signup failed", "error", "signup");
+                }
+            })
+            .catch(() => {
+                showMessage("Server error", "error", "signup");
+            });
+        });
+
+        /* ---------------- LOGIN (REAL) ---------------- */
+        document.getElementById("loginForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const data = {
+                email: document.getElementById("loginEmail").value,
+                password: document.getElementById("loginPassword").value
+                // Role removed - now just email and password
+            };
+
+            fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    window.location.href = "/dashboard";
+                } else {
+                    showMessage("Invalid credentials", "error", "signIn");
+                }
+            })
+            .catch(() => {
+                showMessage("Server error", "error", "signIn");
+            });
+        });
+
+        /* ---------------- INIT ---------------- */
+        initTheme();
+    </script>
+</body>
+</html>
