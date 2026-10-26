@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template, session, redirect
+from flask import Flask, jsonify, request, render_template, session, redirect, send_file
 from flask_cors import CORS
 import sqlite3
 import os
@@ -10,6 +10,7 @@ from datetime import datetime
 import requests
 from urllib.parse import urlparse
 from werkzeug.security import generate_password_hash, check_password_hash
+from ml_engine import ml_engine
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey123"
@@ -838,6 +839,87 @@ def health_check():
         "unique_crops": len(set([item['crop'] for item in data_store])),
         "timestamp": datetime.now().isoformat()
     })
+
+
+# ---------------- MACHINE LEARNING API ROUTES ----------------
+@app.route('/api/ml/metrics', methods=['GET'])
+def get_ml_metrics():
+    """Get ML model evaluation metrics, clusters, and PCA projections"""
+    try:
+        data = ml_engine.get_dashboard_payload()
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/ml/predict', methods=['POST'])
+def predict_ml():
+    """Predict crop profit across Linear Regression, Decision Tree, and Random Forest models"""
+    try:
+        req = request.get_json() or {}
+        crop = req.get('crop', 'Rice')
+        state = req.get('state', 'Odisha')
+        season = req.get('season', 'Kharif')
+        yield_val = float(req.get('yield_t_per_ha', 15.0))
+        price_val = float(req.get('price_per_qtl', 1500.0))
+        ucpi_val = float(req.get('ucpi_score', 65.0))
+
+        result = ml_engine.predict_profit(
+            crop=crop,
+            state=state,
+            season=season,
+            yield_val=yield_val,
+            price_val=price_val,
+            ucpi_val=ucpi_val
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+
+@app.route('/api/ml/recommend', methods=['POST'])
+def recommend_crop():
+    """Recommend best crops based on state, season, yield and price targets"""
+    try:
+        req = request.get_json() or {}
+        state = req.get('state', 'Odisha')
+        season = req.get('season', 'Kharif')
+        target_yield = float(req.get('yield_t_per_ha', 15.0))
+        expected_price = float(req.get('price_per_qtl', 1500.0))
+
+        result = ml_engine.recommend_crop(
+            state=state,
+            season=season,
+            target_yield=target_yield,
+            expected_price=expected_price
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+
+@app.route('/api/ml/clustering', methods=['GET'])
+def get_ml_clustering():
+    """Get K-Means cluster profiles and PCA coordinates for scatter plotting"""
+    try:
+        payload = ml_engine.get_dashboard_payload()
+        return jsonify({
+            "success": True,
+            "clusters": payload["clusters"],
+            "pca_variance_ratio": payload["pca_variance_ratio"],
+            "pca_points": payload["pca_points"]
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/download-ml-report', methods=['GET'])
+def download_ml_report():
+    """Download the comprehensive Machine Learning Word document"""
+    doc_path = os.path.join(os.path.dirname(__file__), "VELAAN_AI_Machine_Learning_Report.docx")
+    if os.path.exists(doc_path):
+        return send_file(doc_path, as_attachment=True, download_name="VELAAN_AI_Machine_Learning_Report.docx")
+    return jsonify({"error": "Report not found"}), 404
 
 
 if __name__ == '__main__':
